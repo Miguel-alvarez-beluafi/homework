@@ -2,7 +2,7 @@
 package com.mycompany.calculadora;
 
 import java.util.Scanner;
-import java.util.Arrays;
+import java.util.Arrays;//No sé por qué dice que no uso esta clasi cuando sí la uso.
 
 public class Calculadora {
 
