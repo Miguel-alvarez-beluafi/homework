@@ -9,6 +9,7 @@ public class Calculadora {
     public static void main(String[] args) {
         String mensajeFinal="Default";
         
+        //Pedir la operación
         Scanner scan = new Scanner(System.in);
         System.out.println("Introduce la operación");
         String operacion=scan.nextLine();
@@ -21,6 +22,7 @@ public class Calculadora {
         operacion=operacion.replace(',', '.');
         System.out.println("Operacion corregida: "+operacion);
         
+        //Este bucle repite todo el proceso hasta que no queden más operaciones que hacer
         boolean hayPar=true;
         while (hayPar&&simbolosCorrectos){
             System.out.println("Operacion: "+operacion);
@@ -32,13 +34,15 @@ public class Calculadora {
             }
         }
         
+        //Se muestra el resultado final
         System.out.println(mensajeFinal);
     }
-//Corrección sin letras ni simbolos raros
+//COMPROBACION DE CARACTERES VÁLIDOS
+    //Esta función controla que los carácteres sean válidos
     public static boolean soloNumeros(String operacion){
         boolean correcto=true;
         String charCorrectos ="0123456789/*-+%(){}[].,'";
-        char [] correctChars= charCorrectos.toCharArray();
+        char [] correctChars= charCorrectos.toCharArray();//Convertir el String en char[] no se cuanto sentido tiene pero quería hacerlo para practicar.
         
         for (int i=0; i<operacion.length(); i++){
             char nextChar='u';
@@ -63,6 +67,7 @@ public class Calculadora {
         
         return correcto; 
     }
+    //Esta función controla que los caracteres no estén apelotonados a menos que sea un '-' de un valor negativo.
     public static boolean opRest (char antChar, char candidato, char nextChar){
         boolean [][] isOpRest ={
             {false, false},
@@ -108,7 +113,7 @@ public class Calculadora {
         if (ordenSim==false){mensajeFinal="Símbolos desordenados";}
         if (ordenSim&&simbolosCorrectos){
             //System.out.println("Simbolos ordenados");
-            
+        //-----Este bucle controla que hayan paréntesis, corchetes y llaves y, de ser asi, selecciona el contenido del primer paréntesis para resolverlo.    
             for (int controlSim=2; controlSim>=0; controlSim--){
                 char [] simbolos ={'(',')','[',']','{','}'};
                 int parA1 = operacion.indexOf(simbolos[control]);
@@ -123,16 +128,13 @@ public class Calculadora {
                     tenemos = false;
                     control-=2;
                 }
-                if(tenemos&&(parC1<parA1 || (parA1==-1&&parC1!=-1) || (parC1==-1&&parA2!=-1) || (parA2<parC1&&parA2!=-1) || (parA2==-1&&parC2!=-1) || (parC2<parA2&&parC2!=-1))){
-                    mensajeFinal="Los "+currentSim[controlSim]+" no están bien escritos";
-                    controlSim=-1;
-                }else if (tenemos&&ordenSim){
+                if (tenemos&&ordenSim){
                     nuevo = operacion.substring(parA1+1, parC1);
                     //System.out.println("Dentro de "+currentSim[controlSim]+" hay "+nuevo);
                     control-=2;
                 }
             }
-        //-----Introducir resultado en paréntesis
+        //-----Esto resuelve las operaciones y las sutituye en el String original
             String resultadoNuevo= operacionesCompletas(nuevo);
             operacion = operacion.replace(nuevo, resultadoNuevo);
         //-----Eliminar paréntesis si los hay
@@ -191,6 +193,7 @@ public class Calculadora {
             System.out.println("Voy a resolver esta operacion: "+operacion);
         //-----Buscar el operador
             boolean isPriority=false;
+            //Este primer bucle busca los operadores con prioridad (-/%) para solucionarlos de izquierda a derecha.
             for(int actIdx=0; actIdx<operacion.length(); actIdx++){
                 char actChar=operacion.charAt(actIdx);
                 isOp=false;
@@ -202,12 +205,11 @@ public class Calculadora {
                         isOp=true;
                         isPriority=true;
                     }
-                    if (operador=='-'&&posOp==0){
-                        isOp=false;
-                    }
+                    
                     if (isOp) actIdx=operacion.length();
                 }
             }
+            //Este otro busca los operadores de menor prioridad (-+)
             if (isPriority==false){
                 for(int actIdx=3; actIdx<opString.length(); actIdx++){
                     char actOp=opString.charAt(actIdx);
@@ -219,7 +221,7 @@ public class Calculadora {
                             operador=actOp;
                             isOp=true;
                         }
-                        if (operador=='-'&&posOp==0){
+                        if (operador=='-'&&posOp==0){ //Comprueba que el '-' no sea un numero negativo al inicio de una frase
                             isOp=false;
                         }
                         if (isOp) actIdx=opString.length();
@@ -228,6 +230,7 @@ public class Calculadora {
             }
             if(isOp==true){
                 //System.out.println("Operador "+operador);
+            //-----RESOLVER LAS OPERACIONES
             //-----Buscar el valor 'a'
                 for(int actIdx=posOp-1; actIdx>=0; actIdx--){
                     char actChar=operacion.charAt(actIdx);
@@ -240,7 +243,8 @@ public class Calculadora {
                                 posAnt=actIdx+1;
                                 //System.out.println("Posicion de inicio: "+posAnt);
                             }
-                            if (actChar=='-' && actIdx>0){
+                            //Aqui voy a comprobar que el '-' no sea un número negativo
+                            if (actChar=='-' && actIdx>0){ 
                                 int charAnt=operacion.charAt(actIdx-1);
                                 posAnt=actIdx+1;
                                 for (int a=0; a<opString.length(); a++){
@@ -257,6 +261,7 @@ public class Calculadora {
 
                 //System.out.println("Operador anterior: "+actChar);
                 }
+            //-----Finalmente selecciono el valor y lo convierto en double
                 String vAString= operacion.substring(posAnt, posOp);
                 //System.out.println("Valor A: "+vAString);
                 double valorA = Double.parseDouble(vAString);
@@ -267,7 +272,7 @@ public class Calculadora {
                     //-----Buscar el operador posterior
                     for(int i=0; i<opString.length(); i++){
                         char actOp=opString.charAt(i);
-
+                        //Con el siguiente condicional me aseguro de que el siguiente operador no sea un '-' de un numero negativo, que es la unica opción que queda con las comprobaciones anteriores.
                         if (actChar==actOp&&actIdx!=posOp+1){
                             i=opString.length();
                             actIdx=operacion.length();
@@ -277,6 +282,7 @@ public class Calculadora {
                     }
                     //System.out.println("Operador posterior: "+actChar);
                 }
+            //-----Finalmente selecciono el valor y lo convierto en double
                 String vBString= operacion.substring(posOp+1, posNext+1);
                 //System.out.println("Valor B: "+vBString);
                 double valorB = Double.parseDouble(vBString);
@@ -326,7 +332,7 @@ public class Calculadora {
         }*/
         
     //-----Comprobar Corchetes
-        correcto=comprobarCompuesto(operacion,'[',']','(',')');
+        if (correcto) correcto=comprobarCompuesto(operacion,'[',']','(',')');
         /*if(correcto){
             System.out.println("Los corchetes estan bien en el nuevo sistema");
         }
@@ -335,7 +341,7 @@ public class Calculadora {
         }*/
         
     //-----Comprobar Llaves
-        correcto=comprobarCompuesto(operacion, '{','}','[',']');
+        if (correcto) correcto=comprobarCompuesto(operacion, '{','}','[',']');
         /*if(correcto){
             System.out.println("Las llaves estan bien en el nuevo sistema");
         }
@@ -387,7 +393,11 @@ public class Calculadora {
                 if (actApa>actCre){
                     correcto=false;
                     a=numApa+1;
-                }else{
+                }else if(actApa==(actCre-1)){
+                    correcto=false;
+                    a=numApa+1;
+                }
+                else{
                     int actApa2=operacion.indexOf(sim[0], actApa+1);
                     if (actApa2<actCre&&actApa2!=-1){
                         correcto=false;
