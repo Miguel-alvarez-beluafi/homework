@@ -31,6 +31,8 @@ public class Calculadora {
                 hayPar=false;
                 operacion=operacionesCompletas(operacion);
                 mensajeFinal="Resultado: "+operacion;
+            }else{
+                operacion = resolverParentesis(operacion, simbolosCorrectos);
             }
         }
         
