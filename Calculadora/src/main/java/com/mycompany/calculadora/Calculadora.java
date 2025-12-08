@@ -23,19 +23,23 @@ public class Calculadora {
         System.out.println("Operacion corregida: "+operacion);
         
         //Este bucle repite todo el proceso hasta que no queden más operaciones que hacer
+        boolean ordenSim= comprobarPar(operacion);//Función que comprueba corrección de los {[()]}
         boolean hayPar=true;
-        while (hayPar&&simbolosCorrectos){
-            System.out.println("Operacion: "+operacion);
-            operacion = resolverParentesis(operacion, simbolosCorrectos);
-            if (operacion.indexOf('(')==-1){
-                hayPar=false;
-                operacion=operacionesCompletas(operacion);
-                mensajeFinal="Resultado: "+operacion;
-            }else{
-                operacion = resolverParentesis(operacion, simbolosCorrectos);
+        if (simbolosCorrectos&&ordenSim){
+            while (hayPar){
+                System.out.println("Operacion: "+operacion);
+                if (operacion.indexOf('(')==-1){
+                    System.out.println("HA ENTRADO");
+                    hayPar=false;
+                    operacion=operacionesCompletas(operacion);
+                    mensajeFinal="Resultado: "+operacion;
+                }else{
+                    operacion = resolverParentesis(operacion, simbolosCorrectos);
+                }
             }
+        }else{
+            mensajeFinal="Paréntesis incorrectos";
         }
-        
         //Se muestra el resultado final
         System.out.println(mensajeFinal);
     }
@@ -106,79 +110,54 @@ public class Calculadora {
     }
 //-----Resolver parentesis
     public static String resolverParentesis(String operacion, boolean simbolosCorrectos){
-        String [] currentSim = {"paréntesis", "corchetes","llaves"};
-        int control=4;
-        String nuevo =operacion;
-        boolean ordenSim= comprobarPar(operacion);//ordenCorrecto(operacion);
-        
-        String mensajeFinal="";
-        if (ordenSim==false){mensajeFinal="Símbolos desordenados";}
-        if (ordenSim&&simbolosCorrectos){
-            //System.out.println("Simbolos ordenados");
-        //-----Este bucle controla que hayan paréntesis, corchetes y llaves y, de ser asi, selecciona el contenido del primer paréntesis para resolverlo.    
-            for (int controlSim=2; controlSim>=0; controlSim--){
-                char [] simbolos ={'(',')','[',']','{','}'};
-                int parA1 = operacion.indexOf(simbolos[control]);
-                int parC1= operacion.indexOf(simbolos[control+1]);
-                int parA2= operacion.indexOf(simbolos[control], parA1+1);
-                int parC2 = operacion.indexOf(simbolos[control+1], parC1+1);
-                boolean tenemos = true;
+    //-----Busca el primer paréntesis y lo soluciona    
+        int parA1 = operacion.indexOf('(');
+        int parC1= operacion.indexOf(')');
+        String nuevo =operacion.substring(parA1+1, parC1);
+        String mensajeFinal=""; 
+    //-----Esto resuelve las operaciones y las sutituye en el String original
+        String resultadoNuevo= operacionesCompletas(nuevo);
+        operacion = operacion.replace(nuevo, resultadoNuevo);
+    //-----Eliminar paréntesis si los hay
+        if (operacion.indexOf('(')!=-1){
+            int parIdx=operacion.indexOf('(');
+            boolean isNum=false;
+            if (parIdx>0){
+                char charAnt = operacion.charAt(parIdx-1);
+                String numString = "0123456789";
 
-                //System.out.println("parA1 "+parA1+" parC1 "+parC1+" parA2 "+parA2+" parC2 "+parC2);
-                if (parA1==-1 && parC1==-1){
-                    //System.out.println("No hay "+currentSim[controlSim]);
-                    tenemos = false;
-                    control-=2;
-                }
-                if (tenemos&&ordenSim){
-                    nuevo = operacion.substring(parA1+1, parC1);
-                    //System.out.println("Dentro de "+currentSim[controlSim]+" hay "+nuevo);
-                    control-=2;
-                }
-            }
-        //-----Esto resuelve las operaciones y las sutituye en el String original
-            String resultadoNuevo= operacionesCompletas(nuevo);
-            operacion = operacion.replace(nuevo, resultadoNuevo);
-        //-----Eliminar paréntesis si los hay
-            if (operacion.indexOf('(')!=-1){
-                int parIdx=operacion.indexOf('(');
-                boolean isNum=false;
-                if (parIdx>0){
-                    char charAnt = operacion.charAt(parIdx-1);
-                    String numString = "0123456789";
-                    
-                    for (int i=0; i<numString.length(); i++){
-                        char actChar = numString.charAt(i);
-                        if (actChar==charAnt){
-                            i=numString.length();
-                            isNum=true;
-                        }
+                for (int i=0; i<numString.length(); i++){
+                    char actChar = numString.charAt(i);
+                    if (actChar==charAnt){
+                        i=numString.length();
+                        isNum=true;
                     }
                 }
-                if (isNum){
-                    operacion=operacion.replace("("+resultadoNuevo+")","*"+resultadoNuevo);
-                }else{
-                    operacion=operacion.replace("("+resultadoNuevo+")", resultadoNuevo);
-                }
             }
-        //-----Susituir corchetes y llaves    
-            if (operacion.indexOf(']')!=-1 && ((operacion.indexOf(')')==-1||(operacion.indexOf(')')> operacion.indexOf(']'))))){
-                int inicio =operacion.indexOf('[');
-                int fin = operacion.indexOf(']');
-                String viejo = operacion.substring(inicio+1, fin);
-                //System.out.println("viejo: "+viejo);
-                operacion=operacion.replace("["+viejo+"]","("+viejo+")");
+            if (isNum){
+                operacion=operacion.replace("("+resultadoNuevo+")","*"+resultadoNuevo);
+            }else{
+                operacion=operacion.replace("("+resultadoNuevo+")", resultadoNuevo);
             }
-            if (operacion.indexOf('}')!=-1 && ((operacion.indexOf(']')==-1||(operacion.indexOf(']')> operacion.indexOf('}'))))){
-                int inicio =operacion.indexOf('{');
-                int fin = operacion.indexOf('}');
-                String viejo = operacion.substring(inicio+1, fin);
-                operacion=operacion.replace("{"+viejo+"}","["+viejo+"]");
-            }
-            
-            mensajeFinal=operacion;
-            
         }
+    //-----Susituir corchetes y llaves    
+        if (operacion.indexOf(']')!=-1 && ((operacion.indexOf(')')==-1||(operacion.indexOf(')')> operacion.indexOf(']'))))){
+            int inicio =operacion.indexOf('[');
+            int fin = operacion.indexOf(']');
+            String viejo = operacion.substring(inicio+1, fin);
+            //System.out.println("viejo: "+viejo);
+            operacion=operacion.replace("["+viejo+"]","("+viejo+")");
+        }
+        if (operacion.indexOf('}')!=-1 && ((operacion.indexOf(']')==-1||(operacion.indexOf(']')> operacion.indexOf('}'))))){
+            int inicio =operacion.indexOf('{');
+            int fin = operacion.indexOf('}');
+            String viejo = operacion.substring(inicio+1, fin);
+            operacion=operacion.replace("{"+viejo+"}","["+viejo+"]");
+        }
+
+        mensajeFinal=operacion;
+            
+        
         return mensajeFinal;
     }
 //-----Resolver operaciones
