@@ -1,5 +1,6 @@
 import java.util.Random;
-  import java.util.Date;
+import java.util.Date;
+import java.io.IOException;
 
 
 public class Coche {
@@ -17,6 +18,13 @@ public class Coche {
     
     public void repro( double ganancia){
         velocidadMaxima=velocidadMaxima*ganancia;
+    }
+    public String comprobarModelo (String nombre) throws IOException {
+        if (nombre==null){
+            throw new IllegalArgumentException("Fallo en comprobarModelo: cadena nula");
+        }else{
+         return nombre;
+        }
     }
     public boolean getBoolean(){
         boolean rdValue=rd.nextBoolean();

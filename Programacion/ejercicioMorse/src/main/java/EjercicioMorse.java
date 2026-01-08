@@ -19,7 +19,6 @@ public class EjercicioMorse {
         System.out.println("Cadena de caracteres: "+Arrays.toString(om.charArray));
         System.out.println("Cadena Morse: "+Arrays.toString(om.intArray));
         System.out.println("Total de caracteres validos: "+om.numCoin);
-
     }
     
 }
